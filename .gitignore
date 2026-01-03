@@ -1,0 +1,35 @@
+# =========================
+# code-server state (ignore contents, keep structure)
+# =========================
+
+code-projects/*
+!code-projects/.gitkeep
+
+# Runtime / state
+code-server-state/data/*
+!code-server-state/data/.gitkeep
+
+# code-server config (local)
+code-server-state/config/code-server/*
+!code-server-state/config/code-server/.gitkeep
+
+# Credentials & auth
+code-server-state/ssh/*
+!code-server-state/ssh/.gitkeep
+
+code-server-state/gh/*
+!code-server-state/gh/.gitkeep
+
+code-server-state/git/.gitconfig
+!code-server-state/git/.gitkeep
+
+code-server-state/certs/*
+!code-server-state/certs/.gitkeep
+
+# Logs / caches
+*.log
+*.cache
+
+# Env files
+.env
+.env.*

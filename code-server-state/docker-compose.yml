@@ -1,0 +1,55 @@
+services:
+  code-server:
+    # Build the image locally from the Dockerfile in this directory
+    build:
+      context: .
+      args:
+        DOCKER_GID: 972            # GID of the host docker group (for docker.sock access)
+        INSTALL_LATEX: "true"     # Optional: install LaTeX toolchain at build time
+
+    image: code-server            # Resulting image name
+    container_name: code-server   # Fixed container name for convenience
+    restart: unless-stopped       # Auto-restart unless explicitly stopped
+
+    # Expose code-server to the host
+    # HTTPS is handled internally by code-server (if certs are provided)
+    ports:
+      - "8443:8080"               # Host:Container
+
+    environment:
+      - TZ=Europe/Athens          # Container timezone
+
+    # Default working directory inside code-server
+    working_dir: /workspace/projects
+
+    volumes:
+      # Project workspace (your actual code lives here)
+      - ../code-projects:/workspace/projects
+
+      # code-server configuration (config.yaml, auth, bind address, etc.)
+      - ./config/code-server:/home/coder/.config/code-server
+
+      # Persistent code-server state (extensions cache, IPC, session data)
+      - ./data:/home/coder/.local/share/code-server
+
+      # Optional TLS certificates for HTTPS
+      - ./certs:/home/coder/.certs:ro
+
+      # SSH keys for Git/Gitea/GitHub access
+      - ./ssh:/home/coder/.ssh
+
+      # Global Git configuration (user.name, user.email, defaults)
+      - ./git/.gitconfig:/home/coder/.gitconfig:ro
+
+      # GitHub CLI authentication and config
+      - ./gh:/home/coder/.config/gh
+
+      # List of VS Code extensions to auto-install on startup
+      - ./extensions.txt:/home/coder/extensions.txt:ro
+
+      # Startup scripts executed in order (entrypoint.d). Auto-install of extensions and copilot on first run of the container.
+      - ./entrypoint.d:/entrypoint.d:ro
+
+      # Docker socket access
+      - /var/run/docker.sock:/var/run/docker.sock
+
