@@ -6,6 +6,7 @@ services:
       args:
         DOCKER_GID: 972            # GID of the host docker group (for docker.sock access)
         INSTALL_LATEX: "true"     # Optional: install LaTeX toolchain at build time
+        INSTALL_ANSIBLE: "true"    # Optional: install Ansible at build time
 
     image: code-server            # Resulting image name
     container_name: code-server   # Fixed container name for convenience
@@ -15,7 +16,9 @@ services:
     # HTTPS is handled internally by code-server (if certs are provided)
     ports:
       - "8443:8080"               # Host:Container
-
+    dns:
+      - 192.168.31.229
+      
     environment:
       - TZ=Europe/Athens          # Container timezone
 
@@ -39,7 +42,7 @@ services:
       - ./ssh:/home/coder/.ssh
 
       # Global Git configuration (user.name, user.email, defaults)
-      - ./git/.gitconfig:/home/coder/.gitconfig:ro
+      - ./git/.gitconfig:/home/coder/.gitconfig
 
       # GitHub CLI authentication and config
       - ./gh:/home/coder/.config/gh

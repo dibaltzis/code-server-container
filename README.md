@@ -154,7 +154,16 @@ Then open:
 https://<host>:8443
 ```
 
-If you dont need the LaTeX package installed set the `INSTALL_LATEX` arg inside the docker compose file to `false`.
+---
+> **Optional build features**
+>
+> - If you don’t need the LaTeX packages installed, set the `INSTALL_LATEX` build arg
+> in the docker-compose file to `false`.
+>
+> - If you don’t need Ansible installed, set the `INSTALL_ANSIBLE` build arg
+> in the docker-compose file to `false`.
+
+
 
 ---
 

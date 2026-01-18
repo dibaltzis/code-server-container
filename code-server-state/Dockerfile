@@ -11,41 +11,35 @@ RUN apt-get update && \
       ca-certificates \
       lsb-release \
     && rm -rf /var/lib/apt/lists/*
-
-# ----------------------------
-# Install GitHub CLI (gh)
-# ----------------------------
+    
+# GitHub CLI repo
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
     | gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg && \
     chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
-      > /etc/apt/sources.list.d/github-cli.list && \
-    apt-get update && \
-    apt-get install -y gh && \
-    rm -rf /var/lib/apt/lists/*
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] \
+      https://cli.github.com/packages stable main" \
+      > /etc/apt/sources.list.d/github-cli.list
 
-# ----------------------------
-# Install Docker CLI (NOT daemon)
-# ----------------------------
+# Docker CLI repo
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg \
     | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
     chmod go+r /usr/share/keyrings/docker-archive-keyring.gpg && \
-    echo \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
       https://download.docker.com/linux/debian \
       $(lsb_release -cs) stable" \
-      > /etc/apt/sources.list.d/docker.list && \
-    apt-get update && \
-    apt-get install -y docker-ce-cli docker-compose-plugin && \
-    rm -rf /var/lib/apt/lists/*
+      > /etc/apt/sources.list.d/docker.list
 
-# ----------------------------
-# Optional LaTeX support
-# ----------------------------
 ARG INSTALL_LATEX=false
-RUN if [ "$INSTALL_LATEX" = "true" ]; then \
-      echo "Installing LaTeX toolchain..." && \
-      apt-get update && \
+ARG INSTALL_ANSIBLE=false
+
+# Install GitHub CLI and Docker CLI + Compose plugin, also optional packages user defined
+RUN apt-get update && \
+    apt-get install -y \
+      gh \
+      docker-ce-cli \
+      docker-compose-plugin && \
+    if [ "$INSTALL_LATEX" = "true" ]; then \
+      echo ">>> Installing LaTeX toolchain..." && \
       apt-get install -y \
         texlive-latex-base \
         texlive-latex-recommended \
@@ -53,11 +47,13 @@ RUN if [ "$INSTALL_LATEX" = "true" ]; then \
         texlive-fonts-recommended \
         texlive-fonts-extra \
         texlive-lang-greek \
-        latexmk && \
-      rm -rf /var/lib/apt/lists/* ; \
-    else \
-      echo "Skipping LaTeX installation"; \
-    fi
+        latexmk ; \
+    fi && \
+    if [ "$INSTALL_ANSIBLE" = "true" ]; then \
+      echo ">>> Installing Ansible..." && \
+      apt-get install -y ansible-core ; \
+    fi && \
+    rm -rf /var/lib/apt/lists/*
     
 # ----------------------------
 # Match host docker group
