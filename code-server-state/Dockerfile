@@ -58,10 +58,10 @@ RUN apt-get update && \
 # ----------------------------
 # Match host docker group
 # ----------------------------
-ARG DOCKER_GID=972
-RUN groupadd -g ${DOCKER_GID} docker || true && \
-    usermod -aG docker coder
+#ARG DOCKER_GID=972
+#RUN groupadd -g ${DOCKER_GID} docker || true && \
+#    usermod -aG docker coder
 
 # Drop back to non-root
-USER coder
+#USER coder
 

@@ -3,10 +3,9 @@ services:
     # Build the image locally from the Dockerfile in this directory
     build:
       context: .
+      dockerfile: Dockerfile_local
       args:
         DOCKER_GID: 972            # GID of the host docker group (for docker.sock access)
-        INSTALL_LATEX: "true"     # Optional: install LaTeX toolchain at build time
-        INSTALL_ANSIBLE: "true"    # Optional: install Ansible at build time
 
     image: code-server            # Resulting image name
     container_name: code-server   # Fixed container name for convenience

@@ -44,7 +44,9 @@ Restoring this directory restores the full environment exactly as it was.
 ### Repository Structure
 ```
 .
-├── Dockerfile                  # Builds the custom code-server image
+├── Dockerfile                  # Builds the base code-server image
+├── Dockerfile_local            # # Builds the local code-server image with DOCKER_GID for docker access
+├── docker-compose.basebuild.yml  # Docker compose for base image
 ├── docker-compose.yml          # Main deployment definition
 ├── entrypoint.d/               # Startup scripts executed inside the container
 │   ├── 10-install-extensions.sh  # Installs VS Code extensions from extensions.txt
@@ -67,6 +69,15 @@ Restoring this directory restores the full environment exactly as it was.
 ---
 
 ## Setup Instructions
+
+### Image Architecture Model (Base + Local Wrapper)
+This repository uses a **two-layer image model**:
+
+- A **base image** that provides the full development platform and is safe to push to a registry
+- A **local wrapper image** that performs host-specific integration (such as matching the Docker group GID) and may include additional local-only packages
+
+This keeps the platform portable while allowing clean, explicit host integration for local use.
+
 
 ### 1. Clone the Repository
 
@@ -113,7 +124,19 @@ Extensions are installed automatically at container startup.
 
 ---
 
-### 4. Configure Docker Group GID
+### 4. Build the base image 
+
+```
+docker compose -f docker-compose.basebuild.yml build
+```
+
+> **Optional build features**
+>
+> - If you don’t need the LaTeX packages installed, set INSTALL_LATEX in `docker-compose.basebuild.yml` to `false`.
+>
+> - If you don’t need Ansible installed, set INSTALL_ANSIBLE in `docker-compose.basebuild.yml` to `false`.
+
+### 5. Prepare for the Local Image (Host Integration)
 
 On the **host**, determine the Docker group GID:
 
@@ -129,23 +152,29 @@ docker:x:972:youruser
 
 Take note of the GID (example: `972`).
 
-Update **both**:
-- `Dockerfile`
+Update:
 - `docker-compose.yml`
 
 Ensure the value of `DOCKER_GID` matches the host.
 
 This allows the `coder` user inside the container to access `/var/run/docker.sock`.
 
+> At this point you can also add any needed local-only packages inside `Dockerfile_local`.
 ---
 
-### 5. Build and Deploy
+### 6. Build and Deploy
 
 From inside `code-server-state/`:
 
-```bash
-docker compose build
-docker compose up -d
+
+Build the local wrapper image:
+```
+docker compose -f docker-compose.yml build
+```
+
+Deploy: 
+```
+docker compose -f docker-compose.yml up -d
 ```
 
 Then open:
@@ -155,19 +184,8 @@ https://<host>:8443
 ```
 
 ---
-> **Optional build features**
->
-> - If you don’t need the LaTeX packages installed, set the `INSTALL_LATEX` build arg
-> in the docker-compose file to `false`.
->
-> - If you don’t need Ansible installed, set the `INSTALL_ANSIBLE` build arg
-> in the docker-compose file to `false`.
 
-
-
----
-
-### 6. Verify Docker Access (Inside Code-Server)
+### 7. Verify Docker Access (Inside Code-Server)
 
 Open a terminal in code-server and run:
 

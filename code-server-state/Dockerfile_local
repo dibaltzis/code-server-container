@@ -1,0 +1,13 @@
+FROM code-server-base:latest
+
+ARG DOCKER_GID=972
+# ----------------------------
+# Match host docker group
+# ----------------------------
+RUN if ! getent group ${DOCKER_GID}; then \
+      groupadd -g ${DOCKER_GID} docker; \
+    fi && \
+    usermod -aG ${DOCKER_GID} coder
+    
+# Drop back to non-root
+USER coder
