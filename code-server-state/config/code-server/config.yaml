@@ -1,0 +1,20 @@
+bind-addr: 0.0.0.0:8443
+auth: none
+cert: /home/coder/.certs/server.crt
+cert-key: /home/coder/.certs/server.key
+
+# WARNING: auth is disabled.
+# This exposes code-server without authentication.
+# Use only in trusted environments (e.g. local network).
+# To enable authentication:
+#   1. set: auth: password
+#   2. define a PASSWORD environment variable in docker-compose.yml:
+#        environment:
+#          - PASSWORD=your-strong-password
+
+
+# --- Reverse proxy mode (nginx + Authelia) ---
+# Uncomment the lines below and comment out the direct mode above
+#bind-addr: 0.0.0.0:8080
+#auth: none
+#cert: false

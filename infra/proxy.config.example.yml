@@ -1,0 +1,43 @@
+domain:
+  mode: nip
+  
+  #used only if mode=nip
+  suffix: nip.io
+  ip: 192.168.31.127   # REQUIRED for nip mode
+  
+  #used only if mode=static
+  name: example.com
+
+certificate:
+  mode: selfsigned   # selfsigned | provided
+  name: code-server-certificate
+
+  # used only if mode=provided
+  # those files must be under /nginx/certs/
+  cert_file: fullchain.pem
+  key_file: privkey.pem
+
+auth_users:
+  test-user:
+    username: test-user
+    password: this-is-a-strong-password
+    email: test-user@email.com
+    groups:
+      - admins
+
+services:
+  auth:
+    is_auth: true
+    container_name: authelia
+    host_prefix: auth
+    port: 9091
+    requires_auth: false
+
+  code-server:
+    container_name: code-server
+    host_prefix: code
+    port: 8080
+    requires_auth: true
+    websocket: true
+    allowed_groups: 
+      - admins

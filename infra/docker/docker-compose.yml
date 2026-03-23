@@ -1,0 +1,92 @@
+name: code-server-platform
+
+services:
+  code-server_test:
+    build:
+      context: .
+      dockerfile: Dockerfile_local
+      args:
+        DOCKER_GID: 972
+
+    image: code-server
+    container_name: code-server
+    restart: unless-stopped
+
+    environment:
+      - TZ=Europe/Athens
+
+    working_dir: /workspace/projects
+
+    volumes:
+    # Project workspace (your actual code lives here)
+      - ../../code-projects:/workspace/projects
+
+      # code-server configuration (config.yaml, auth, bind address, etc.)
+      - ../../code-server-state/config/code-server:/home/coder/.config/code-server
+
+      # Persistent code-server state (extensions, cache, session data)
+      - ../../code-server-state/data:/home/coder/.local/share/code-server
+
+      # SSH keys for Git/Gitea/GitHub access
+      - ../../code-server-state/ssh:/home/coder/.ssh
+
+      # Global Git configuration (user.name, user.email, defaults)
+      - ../../code-server-state/git/.gitconfig:/home/coder/.gitconfig
+
+      # GitHub CLI authentication and config
+      - ../../code-server-state/gh:/home/coder/.config/gh
+
+      # TLS certificates for HTTPS (used in direct mode without reverse proxy)
+      - ../../code-server-state/certs:/home/coder/.certs:ro
+
+      # List of VS Code extensions to auto-install on startup
+      - ./extensions.txt:/home/coder/extensions.txt:ro
+
+      # Startup scripts executed at container start (entrypoint.d)
+      - ./entrypoint.d:/entrypoint.d:ro
+
+      # Docker socket access (enables full Docker control from inside code-server)
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    networks:
+      - code-server-net
+
+# --- Optional: Reverse Proxy + Authentication ---
+  # Uncomment the services below to enable nginx + Authelia
+
+  # nginx:
+  #   image: nginx:latest
+  #   container_name: nginx
+  #   restart: unless-stopped
+  #
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #
+  #   volumes:
+  #     - ../nginx/conf.d:/etc/nginx/conf.d:ro
+  #     - ../nginx/certs:/etc/nginx/certs:ro   # TLS certificates (generated or provided)
+  #
+  #   networks:
+  #     - code-server-net
+
+  # authelia:
+  #   image: authelia/authelia:latest
+  #   container_name: authelia
+  #   restart: unless-stopped
+  #
+  #   volumes:
+  #     - ../nginx/authelia:/config
+  #     - ../nginx/authelia/db:/config/db
+  #
+  #   networks:
+  #     - code-server-net
+
+networks:
+  code-server-net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.0.0/24
+          gateway: 172.16.0.1

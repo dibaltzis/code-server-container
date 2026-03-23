@@ -1,0 +1,12 @@
+FROM code-server-base:latest
+
+USER root
+
+ARG DOCKER_GID=972
+
+RUN if ! getent group ${DOCKER_GID}; then \
+      groupadd -g ${DOCKER_GID} docker; \
+    fi && \
+    usermod -aG ${DOCKER_GID} coder
+    
+USER coder

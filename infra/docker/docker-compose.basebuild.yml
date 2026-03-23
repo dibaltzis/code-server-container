@@ -1,0 +1,7 @@
+services:
+  code-server-base:
+    build:
+      context: .
+      args:
+        INSTALL_LATEX: "true"
+        INSTALL_ANSIBLE: "true"
